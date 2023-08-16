@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.green.greengram.feed.FeedMapper">
+
+    <resultMap id="FeedDomainRM" type="FeedVo">
+        <result property="ifeed" column="ifeed"/>
+        <association property="cmt" column="ifeed" select="selFeedCmt"/>
+        <collection property="imgList" column="ifeed" select="selFeedImgList"/>
+    </resultMap>
+
+    <select id="selFeedList" resultMap="FeedDomainRM">
+        SELECT A.ifeed, A.location, A.ctnt, A.iuser, A.created_at createdAt
+             , C.unm, C.pic
+             , IFNULL(E.cnt, 0) AS favCnt
+            <if test="iuserForFav > 0">
+             , CASE WHEN D.ifeed IS NULL THEN 0 ELSE 1 END AS isFav
+            </if>
+         FROM t_feed A
+        INNER JOIN t_user C
+           ON A.iuser = C.iuser
+        <if test="iuserForMyFeed > 0">
+          AND C.iuser = ${iuserForMyFeed}
+        </if>
+         LEFT JOIN (
+            SELECT ifeed, COUNT(ifeed) AS cnt
+              FROM t_feed_fav
+             GROUP BY ifeed
+         ) E
+           ON A.ifeed = E.ifeed
+        <if test="iuserForFav > 0">
+         LEFT JOIN t_feed_fav D
+           ON D.iuser = ${iuserForFav}
+          AND A.ifeed = D.ifeed
+        </if>
+        ORDER BY A.ifeed DESC
+        LIMIT ${startIdx}, ${size}
+    </select>
+
+
+    <select id="selFeedImgList" resultType="FeedPicVo">
+        SELECT pic FROM t_feed_pic
+        WHERE ifeed = ${ifeed}
+    </select>
+
+
+    <!-- //////////////////////////// cmt ///////////////////////-->
+    <select id="selFeedCmt" resultType="FeedCmtVo">
+        SELECT A.*, COUNT(A.icmt) - 1 AS isMore
+        FROM (
+                 SELECT A.icmt, A.cmt, A.created_at createdAt, A.ifeed
+                      , B.iuser, B.unm as writer, B.pic as writerPic
+                  FROM t_feed_cmt A
+                 INNER JOIN t_user B
+                    ON A.iuser = B.iuser
+                 WHERE A.ifeed = ${ifeed}
+                 ORDER BY icmt ASC
+                 LIMIT 2
+             ) A
+        GROUP BY A.ifeed
+    </select>
+
+    <select id="selFeedCmtList">
+        SELECT
+            A.icmt, A.cmt, A.regdt
+             , B.iuser, B.nm as writer, B.mainimg as writerimg
+        FROM t_feed_cmt A
+        INNER JOIN t_user B
+            ON A.iuser = B.iuser
+        WHERE A.ifeed = ${ifeed}
+        ORDER BY icmt ASC
+    </select>
+
+</mapper>
