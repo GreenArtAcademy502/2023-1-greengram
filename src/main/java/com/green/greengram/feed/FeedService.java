@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -34,6 +35,7 @@ public class FeedService {
         entity.setUserEntity(auth.getLoginUser());
 
         FeedEntity result = feedRep.save(entity);
+        log.info("user-name : {}", result.getUserEntity().getUnm());
         if(result == null) { return 0L; }
 
         String target = "feed/" + result.getIfeed();
@@ -66,23 +68,21 @@ public class FeedService {
     /********************************************    fav [start]  *********/
     public int feedFavProc(long ifeed, int type) {
         FeedEntity feedEntity = feedRep.getReferenceById(ifeed);
-        UserEntity userEntity = userRep.getReferenceById(auth.getLoginUser().getIuser());
+        UserEntity userEntity = userRep.findById(auth.getLoginUser().getIuser()).get();
 
         FeedFavId feedFavId = FeedFavId.builder()
                 .feedEntity(feedEntity)
                 .userEntity(userEntity)
                 .build();
 
+        FeedFavEntity feedFavEntity = FeedFavEntity.builder()
+                .feedFavId(feedFavId)
+                .build();
 
         if(type == 0) { //삭제
-            feedFavRep.delete(FeedFavEntity.builder()
-                    .feedFavId(feedFavId)
-                    .build());
+            feedFavRep.delete(feedFavEntity);
         } else { //등록
-            feedFavRep.save(FeedFavEntity.builder()
-                    .feedFavId(feedFavId)
-                    .build());
-
+            feedFavRep.save(feedFavEntity);
         }
         return 1;
     }
@@ -110,7 +110,6 @@ public class FeedService {
                 .writer(userEntity.getUnm())
                 .writerPic(userEntity.getPic())
                 .build();
-
     }
 
 

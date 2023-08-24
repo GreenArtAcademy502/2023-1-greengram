@@ -1,6 +1,5 @@
 package com.green.greengram.common.config.security.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.green.greengram.common.config.properties.AppProperties;
 import com.green.greengram.common.config.redis.RedisService;
 import com.green.greengram.common.config.security.AuthTokenProvider;
@@ -19,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
@@ -32,11 +32,12 @@ import static com.green.greengram.common.config.security.oauth.OAuth2Authorizati
 import static org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames.REFRESH_TOKEN;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final RedisService redisService;
     private final OAuth2AuthorizationRequestBasedOnCookieRepository authorizationRequestRepository;
-    private final AuthTokenProvider tokenProvider;
+    private final AuthTokenProvider authTokenProvider;
     private final AppProperties appProperties;
 
     @Override
@@ -59,7 +60,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         if(redirectUri.isPresent() && !isAuthorizedRedirectUri(redirectUri.get())) {
             throw new IllegalArgumentException("Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication");
         }
-
+        //TODO: getDefaultTargetUrl() 어떤 값이 넘어오는지 체크
         String targetUrl = redirectUri.orElse(getDefaultTargetUrl());
 
         OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
@@ -71,16 +72,17 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         List<String> roles = new ArrayList();
         roles.add(RoleType.USER.getCode());
         String ip = request.getRemoteAddr();
+        log.info("oauth-login ip : {}", ip);
 
         // RT가 이미 있을 경우
-        String redisRefreshTokenKey = String.format("%s:%s", appProperties.getAuth().getRedisRefreshKey(), ip);
+        String redisRefreshTokenKey = String.format("RT(%s):%s", providerType.name(), user.getIuser());
         if(redisService.getValues(redisRefreshTokenKey) != null) {
             redisService.deleteValues(redisRefreshTokenKey); // 삭제
         }
         LoginInfoVo vo = new LoginInfoVo(user.getIuser(), roles);
 
-        AuthToken at = tokenProvider.createAccessToken(userInfo.getId(), vo);
-        AuthToken rt = tokenProvider.createRefreshToken(userInfo.getId(), vo);
+        AuthToken at = authTokenProvider.createAccessToken(userInfo.getId(), vo);
+        AuthToken rt = authTokenProvider.createRefreshToken(userInfo.getId(), vo);
 
         redisService.setValuesWithTimeout(redisRefreshTokenKey, rt.getToken(), appProperties.getAuth().getRefreshTokenExpiry());
         int cookieMaxAge = (int) appProperties.getAuth().getRefreshTokenExpiry() / 1000;

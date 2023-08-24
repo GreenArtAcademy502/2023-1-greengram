@@ -9,9 +9,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
-import org.springframework.boot.context.properties.bind.DefaultValue;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name="T_USER", uniqueConstraints = { @UniqueConstraint(name = "unique_tuser_provider_uid", columnNames = {"provider_type", "uid"})})
@@ -30,10 +32,11 @@ public class UserEntity extends BaseEntity {
     @Column(name="provider_type", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
     @NotNull
+    @Size(min = 10, max = 20)
     private ProviderType providerType;
 
-    @Column(nullable = false, length = 40)
-    @Size(min = 3, max = 40)
+    @Column(nullable = false, length = 80)
+    @Size(min = 3, max = 80)
     private String uid;
 
     @JsonIgnore
@@ -49,10 +52,11 @@ public class UserEntity extends BaseEntity {
     @NotNull
     private RoleType roleType;
 
-    @Size(min = 10, max = 40)
-    @Column(length=40)
+    @Size(min = 10, max = 60)
+    @Column(length=60)
     private String email;
 
     private String cmt;
     private String pic;
+
 }

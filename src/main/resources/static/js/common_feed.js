@@ -53,7 +53,7 @@ const feedObj = {
             // 글쓴이 정보 영역
             let imgSrc = '/img/defaultProfileImg.png';
             if(item.pic) {
-                imgSrc = `/pic/profile/${item.iuser}/${item.pic}`;
+                imgSrc = item.pic.startsWith('http') ? item.pic : `/pic/profile/${item.iuser}/${item.pic}`;
             }
             const imgTag = `<img src="${imgSrc}" class="pointer profile w30 h30" 
             onclick="moveToProfile(${item.iuser});" onerror="this.onerror=null; this.src='/img/defaultProfileImg.png'">`;

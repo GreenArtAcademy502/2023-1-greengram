@@ -26,4 +26,6 @@ public class BaseEntity {
     @JsonIgnore
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+
 }

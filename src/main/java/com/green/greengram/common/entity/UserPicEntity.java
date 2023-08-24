@@ -9,7 +9,7 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name = "t_user_img")
+@Table(name = "t_user_pic")
 @Data
 @SuperBuilder
 @NoArgsConstructor
@@ -19,7 +19,7 @@ public class UserPicEntity extends BaseEntity  {
     @Id
     @ManyToOne
     @JoinColumn(name = "iuser")
-    @ToString.Exclude
+    //@ToString.Exclude
     private UserEntity userEntity;
 
     @Id

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -14,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
                 , description = "대구그린컴퓨터학원 SNS"
                 , version = "v0.0.1"
         ),
-        security = @SecurityRequirement(name="authorization")
+        security = @SecurityRequirement(name = "authorization")
 )
 @SecurityScheme(
         type = SecuritySchemeType.HTTP,
@@ -22,4 +23,5 @@ import org.springframework.context.annotation.Configuration;
         in = SecuritySchemeIn.HEADER,
         bearerFormat = "JWT",
         scheme = "Bearer")
+@RequiredArgsConstructor
 public class SwaggerAnnoConfiguration {}
