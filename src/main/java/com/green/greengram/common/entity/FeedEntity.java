@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -17,6 +18,8 @@ import org.hibernate.annotations.DynamicUpdate;
 @NoArgsConstructor
 @ToString(callSuper = true)
 @EqualsAndHashCode(callSuper = true)
+@DynamicInsert
+@DynamicUpdate
 public class FeedEntity extends BaseEntity {
 
     @Id
@@ -25,6 +28,7 @@ public class FeedEntity extends BaseEntity {
     private Long ifeed;
 
     @Column(length=20)
+    @ColumnDefault("'우리집'")
     private String location;
 
     @Column(length=1000)
@@ -34,4 +38,5 @@ public class FeedEntity extends BaseEntity {
     @JoinColumn(name = "iuser")
     @ToString.Exclude
     private UserEntity userEntity;
+
 }

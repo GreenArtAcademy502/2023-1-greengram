@@ -15,7 +15,7 @@
 
         myFetch.post('/api/v1/auth/sign-in', function(res) {
             console.log(res);
-            if(res) {
+            if(res.accessToken) {
                 window.localStorage.setItem("access_token", res.accessToken);
                 location.href = '/feed';
             }

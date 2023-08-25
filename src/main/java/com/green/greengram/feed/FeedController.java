@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,9 +21,10 @@ public class FeedController {
 
     private final FeedService service;
 
+    //@PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE })
     @PostMapping
-    public Long reg(MultipartFile[] imgs, FeedEntity entity) {
-        return service.reg(imgs, entity);
+    public FeedRegVo reg(MultipartFile[] imgs, FeedRegReqDto dto) {
+        return service.reg(imgs, dto);
     }
 
     @GetMapping

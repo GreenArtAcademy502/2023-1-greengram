@@ -59,8 +59,8 @@ public class AuthService {
                 .providerType(ProviderType.LOCAL)
                 .roleType(RoleType.USER)
                 .build();
-        UserEntity r = userRep.save(p);
-        return processAuth(r, req, res);
+        userRep.save(p);
+        return processAuth(p, req, res);
     }
 
     public AuthResVo signIn(SignInReqDto dto, HttpServletRequest req, HttpServletResponse res) {
@@ -75,6 +75,7 @@ public class AuthService {
         if(!passwordEncoder.matches(dto.getUpw(), r.getUpw())) {
             throw new RestApiException(AuthErrorCode.VALID_PW);
         }
+
         // RT가 이미 있을 경우
         String redisRefreshTokenKey = String.format("%s:%s", appProperties.getAuth().getRedisRefreshKey(), r.getIuser());
         if(redisService.getValues(redisRefreshTokenKey) != null) {
@@ -92,8 +93,8 @@ public class AuthService {
 
         String redisRefreshTokenKey = String.format("%s:%s", appProperties.getAuth().getRedisRefreshKey(), userEntity.getIuser());
         redisService.setValuesWithTimeout(redisRefreshTokenKey, rt.getToken(), appProperties.getAuth().getRefreshTokenExpiry());
-        int cookieMaxAge = (int) appProperties.getAuth().getRefreshTokenExpiry() / 1000;
 
+        int cookieMaxAge = (int) (appProperties.getAuth().getRefreshTokenExpiry() * 0.001);
         MyHeaderUtils.deleteCookie(req, res, REFRESH_TOKEN);
         MyHeaderUtils.addCookie(res, REFRESH_TOKEN, rt.getToken(), cookieMaxAge);
 
@@ -108,9 +109,10 @@ public class AuthService {
             AuthToken authToken = new AuthToken(accessToken, appProperties.getAccessTokenKey());
 
             String blackAccessTokenKey = String.format("%s:%s", appProperties.getAuth().getRedisAccessBlackKey(), accessToken);
-            long expiration =  authToken.getTokenExpirationTime() - LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-
-            redisService.setValuesWithTimeout(blackAccessTokenKey, "logout", expiration);
+            long expiration = authToken.getTokenExpirationTime() - LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            if(expiration > 0) {
+                redisService.setValuesWithTimeout(blackAccessTokenKey, "logout", expiration);
+            }
         }
 
         //cookie에서 값 가져오기

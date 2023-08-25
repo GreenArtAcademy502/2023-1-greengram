@@ -1,5 +1,7 @@
 package com.green.greengram.feed;
 
+import com.green.greengram.common.config.exception.FeedErrorCode;
+import com.green.greengram.common.config.exception.RestApiException;
 import com.green.greengram.feed.model.cmt.FeedCmtSaveDto;
 import com.green.greengram.common.config.security.AuthenticationFacade;
 import com.green.greengram.common.entity.*;
@@ -7,10 +9,13 @@ import com.green.greengram.common.utils.MyFileUtils;
 import com.green.greengram.feed.model.*;
 import com.green.greengram.feed.model.cmt.FeedCmtVo;
 import com.green.greengram.user.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -30,14 +35,23 @@ public class FeedService {
     private final FeedCmtRepository feedCmtRep;
     private final FeedFavRepository feedFavRep;
 
-    public Long reg(MultipartFile[] imgs, FeedEntity entity) {
-        if(imgs == null) { return 0L; }
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Transactional
+    public FeedRegVo reg(MultipartFile[] imgs, FeedRegReqDto dto) {
+        if(imgs == null) { throw new RestApiException(FeedErrorCode.NEED_FEED_IMGS); }
+
+        FeedEntity entity = new FeedEntity();
+        entity.setCtnt(dto.getCtnt());
+        entity.setLocation(dto.getLocation());
         entity.setUserEntity(auth.getLoginUser());
 
-        FeedEntity result = feedRep.save(entity);
-        log.info("user-name : {}", result.getUserEntity().getUnm());
-        if(result == null) { return 0L; }
+        feedRep.saveAndFlush(entity);
+        entityManager.detach(entity);
+        FeedEntity result = feedRep.findById(entity.getIfeed()).get();
 
+        log.info("user-name : {}", result.getUserEntity().getUnm());
         String target = "feed/" + result.getIfeed();
 
         for(MultipartFile img : imgs) {
@@ -51,7 +65,15 @@ public class FeedService {
                     .build();
             feedPicRep.save(feedPicEntity);
         }
-        return result.getIfeed();
+
+       // entityManager.refresh(result);
+        log.info("result : {}", result);
+        return FeedRegVo.builder()
+                .ctnt(result.getCtnt())
+                .location(result.getLocation())
+                .ifeed(result.getIfeed())
+                .createdAt(result.getCreatedAt().toString())
+                .build();
     }
 
     public List<FeedVo> selFeedList(Pageable pageable) {
@@ -90,8 +112,10 @@ public class FeedService {
 
     /********************************************    cmt [start]  *********/
     public FeedCmtVo insFeedCmt(FeedCmtSaveDto dto) {
-        FeedEntity feedEntity = feedRep.getReferenceById(dto.getIfeed());
-        UserEntity userEntity = userRep.getReferenceById(auth.getLoginUser().getIuser());
+        //FeedEntity feedEntity = feedRep.getReferenceById(dto.getIfeed());
+        //UserEntity userEntity = userRep.getReferenceById(auth.getLoginUser().getIuser());
+        FeedEntity feedEntity = FeedEntity.builder().ifeed(dto.getIfeed()).build();
+        UserEntity userEntity = UserEntity.builder().iuser(auth.getLoginUser().getIuser()).build();
 
         FeedCmtEntity feedCmtEntity = FeedCmtEntity.builder()
                 .cmt(dto.getCmt())

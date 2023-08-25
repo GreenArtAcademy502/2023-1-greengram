@@ -49,20 +49,22 @@ public class SecurityConfiguration {
                                             , "/swagger.html"
                                             , "/swagger-ui/**"
                                             , "/v3/api-docs/**"
-                                            , "/admin/**"
                                             , "/*/oauth2/code/*"
                                             , "/oauth2/**"
                                             , "/oauth/**"
-                                            , "/dm","/feed","/user/profile","/user/signin","/user/signup"
-                                            ,"/api/v1/auth/**"
-                                            ,"/api/v1/feed/**"
                                             , "/pic/**"
                                             , "/error"
                                             , "/err"
+
+                                            , "/admin/**"
+                                            , "/dm","/feed","/user/profile","/user/signin","/user/signup"
+                                            ,"/api/v1/auth/**"
+                                            ,"/api/v1/feed/**"
                                     ).permitAll()
                                  //   .requestMatchers(HttpMethod.GET, "/sign-api/refresh-token").permitAll()
 
                                     .requestMatchers("**exception**").permitAll()
+                                    .anyRequest().authenticated()
 
 
                 ) //사용 권한 체크
@@ -106,7 +108,6 @@ public class SecurityConfiguration {
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
-
 
     /*
      * Oauth 인증 실패 핸들러
