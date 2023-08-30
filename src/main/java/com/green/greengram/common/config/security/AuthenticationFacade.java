@@ -9,13 +9,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthenticationFacade {
 
-    public boolean isLogin() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null;
+    private Authentication getAuth() {
+        return SecurityContextHolder.getContext().getAuthentication();
     }
+
+    //로그인이 되어 있는지 확인
+    public boolean isAuthenticated() { return getAuth() != null; }
+
     public UserEntity getLoginUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userDetails = (UserPrincipal) auth.getPrincipal();
+        Authentication auth = getAuth();
+        if(auth == null) { return null; }
+        UserPrincipal userDetails = (UserPrincipal) getAuth().getPrincipal();
         return UserEntity.builder().iuser(userDetails.getIuser()).build();
+    }
+
+    public Long getLoginUserPk() {
+        UserEntity userEntity = getLoginUser();
+        if(userEntity == null) { return null; }
+        return userEntity.getIuser();
     }
 }

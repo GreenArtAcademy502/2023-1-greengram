@@ -11,5 +11,4 @@ import java.util.List;
 @Mapper
 public interface FeedMapper {
     List<FeedVo> selFeedList(FeedDto dto);
-    List<FeedCmtVo> selFeedCmtList(FeedCmtEntity param);
 }

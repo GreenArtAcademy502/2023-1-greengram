@@ -20,7 +20,7 @@ public class UserController {
 
     @GetMapping("/feed")
     public List<FeedVo> selFeedList(@PageableDefault(sort="ifeed", direction = Sort.Direction.DESC, size=20) Pageable pageable) {
-        //return service.selFeedList(pageable);
+        return service.selFeedList(pageable);
         return null;
     }
 

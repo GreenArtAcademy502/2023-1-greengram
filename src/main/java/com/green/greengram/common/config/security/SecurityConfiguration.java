@@ -88,7 +88,8 @@ public class SecurityConfiguration {
 //
 //        )
         .csrf(csrf -> csrf.disable()) //CSRF 보안이 필요 X, 쿠키와 세션을 이용해서 인증을 하고 있기 때문에 발생하는 일, https://kchanguk.tistory.com/197
-        .exceptionHandling(except -> {
+                .anonymous(anony -> anony.disable())
+                .exceptionHandling(except -> {
             except.accessDeniedHandler(tokenAccessDeniedHandler);
             except.authenticationEntryPoint(new RestAuthenticationEntryPoint());
         })

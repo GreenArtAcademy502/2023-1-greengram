@@ -138,8 +138,9 @@ public class FeedService {
 
 
     public List<FeedCmtVo> selFeedCmtList(Long ifeed) {
-        FeedEntity feedEntity = feedRep.getReferenceById(ifeed);
-        List<FeedCmtEntity> list = feedCmtRep.findAllByFeedEntity(feedEntity);
+        //FeedEntity feedEntity = feedRep.getReferenceById(ifeed);
+        //List<FeedCmtEntity> list = feedCmtRep.findAllByFeedEntity(feedEntity);
+        List<FeedCmtEntity> list = feedCmtRep.selFeedCmtAll(ifeed);
         log.info("list : {}", list);
         return list.stream()
                 .map(item -> FeedCmtVo.builder()
