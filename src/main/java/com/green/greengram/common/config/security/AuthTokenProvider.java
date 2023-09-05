@@ -10,7 +10,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,7 @@ public class AuthTokenProvider {
 
     @PostConstruct
     private void init() {
-        byte[] accessKeyBytes = Decoders.BASE64.decode(appProperties.getAuth().getAceessSecret());
+        byte[] accessKeyBytes = Decoders.BASE64.decode(appProperties.getAuth().getAccessSecret());
         this.appProperties.setAccessTokenKey(Keys.hmacShaKeyFor(accessKeyBytes));
 
         byte[] refreshKeyBytes = Decoders.BASE64.decode(appProperties.getAuth().getRefreshSecret());

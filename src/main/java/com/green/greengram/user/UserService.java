@@ -24,7 +24,7 @@ public class UserService {
 
     public List<FeedVo> selFeedList() {
         UserEntity userEntity = userRep.findById(authFacade.getLoginUserPk()).orElseThrow(() -> new RestApiException(FeedErrorCode.NO_FEED));
-
+        return null;
 
     }
 }
